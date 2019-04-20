@@ -120,5 +120,14 @@ $app->post('/ocorrencia', function(Request $request, Response $response, array $
     return $response;
 });
 
+///gamevasb/api/v1/
+$app->group('/gamevasb', function() use ($app) {
+    $app->group('/api', function() use ($app){
+        $app->group('/v1', function() use ($app) {
+            
+        });
+    });
+});
+
 $app->run();
 ?>
