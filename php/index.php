@@ -1,4 +1,7 @@
 <?php
+//phpinfo();
+//exit;
+
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 
@@ -7,26 +10,13 @@ require './vendor/autoload.php';
 $config['displayErrorDetails'] = true;
 $config['addContentLengthHeader'] = false;
 
-include './dbconfig.php';
+require './dbconfig.php';
+require './logger.php';
 
 $app = new \Slim\App(['settings' => $config]);
 $container = $app->getContainer();
-
-$container['logger'] = function($c) {
-    $logger = new \Monolog\Logger('my_logger');
-    $file_handler = new \Monolog\Handler\StreamHandler('./logs/app.log');
-    $logger->pushHandler($file_handler);
-    return $logger;
-};
-
-$container['db'] = function ($c) {
-    $db = $c['settings']['db'];
-    $pdo = new PDO('mysql:host=' . $db['host'] . ';dbname=' . $db['dbname'],
-        $db['user'], $db['pass']);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    return $pdo;
-};
+$container['logger'] = getLogger();    
+$container['db'] = getDB();
 
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
@@ -43,11 +33,12 @@ $app->add(function ($req, $res, $next) {
 $app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
     $name = $args['name'];
     $response->getBody()->write("Hello, $name");
-    $this->logger->addInfo('Nome: ' . $name);
+    $this->logger->info('Nome: ' . $name);
     return $response;
 });
 
 $app->get('/ocorrencia', function(Request $request, Response $response, array $args) {
+    $this->logger->info("Busca ocorrencia");
     $sql = "SELECT ";
     $sql .= "nroOcorrencia as numero_ocorrencia, IFNULL(situacao_ocorrencia, 'ABERTA') situacao_ocorrencia, ";
     $sql .= "data_ocorrencia, latitude, longitude, telefone_solicitante, ";
@@ -109,22 +100,27 @@ $app->post('/ocorrencia', function(Request $request, Response $response, array $
     array_push($dado, filter_var($data['natureza'], FILTER_SANITIZE_STRING));
     array_push($dado, filter_var($data['descricao'], FILTER_SANITIZE_STRING));
 
-    $this->logger->addInfo($sql);
-    $this->logger->addInfo($dado);
+    $this->logger->info($sql);
+    $this->logger->info('dados ', ['dado' => $dado]);
 
     $stmt->execute($dado);
     $idChamada = $this->db->lastInsertId();
-    $this->logger->addInfo("Nova chamada " . $idChamada);
+    $this->logger->info("Nova chamada " . $idChamada);
     $response = $response->withHeader('Content-Type','application/json');
+    $response = $response->withStatus(201);
     $response->getBody()->write("{\"ocorrencia\":" . $idChamada . "}");
     return $response;
 });
 
+require './voluntario.php';
 ///gamevasb/api/v1/
 $app->group('/gamevasb', function() use ($app) {
     $app->group('/api', function() use ($app){
         $app->group('/v1', function() use ($app) {
-            
+            // $app->post('/voluntario', function(Request $request, Response $response, array $args) {                
+            //     voluntarioNovo($request, $response, $args, $this->db, $this);
+            // });
+            $app->post('/voluntario', 'voluntarioNovo');
         });
     });
 });
