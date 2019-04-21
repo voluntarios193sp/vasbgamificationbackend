@@ -54,8 +54,7 @@ function voluntarioNovo(Request $request, Response $response, array $args) {
         $response->getBody()->write("Internal Error 1");
         return $response;
     }
-    
-    
+        
     $arrResp = array('id' => $novoID, 'cpf' => $cpf, 'avatar_url'=> $avatarURL, 'nickname' => $nick);
 
     $response = $response->withHeader('Content-Type','application/json')->withStatus(201);
