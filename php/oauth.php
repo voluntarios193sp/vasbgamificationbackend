@@ -4,6 +4,7 @@ use \Psr\Http\Message\ResponseInterface as Response;
 use Firebase\JWT\JWT;
 use Tuupola\Base62;
 
+//to generate users: htpasswd -nbBC 10 vasbmobile cobom
 
 function oauthGeraToken(Request $request, Response $response, array $args) {
     //$db = getDB();
