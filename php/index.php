@@ -7,16 +7,21 @@ use \Psr\Http\Message\ResponseInterface as Response;
 
 require './vendor/autoload.php';
 
-$config['displayErrorDetails'] = true;
-$config['addContentLengthHeader'] = false;
+$config['displayErrorDetails'] = false;
+$config['addContentLengthHeader'] = true;
 
 require './dbconfig.php';
+require './oauthconfig.php';
 require './logger.php';
+require './voluntario.php';
+require './oauth.php';
+require './healthcheck.php';
 
 $app = new \Slim\App(['settings' => $config]);
 $container = $app->getContainer();
 $container['logger'] = getLogger();    
 $container['db'] = getDB();
+$container['secretkey'] = getOAuthSecret();
 
 $app->options('/{routes:.+}', function ($request, $response, $args) {
     return $response;
@@ -29,6 +34,33 @@ $app->add(function ($req, $res, $next) {
             ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
             ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
+
+
+$app->add(new \Tuupola\Middleware\JwtAuthentication([
+    "logger" => $container['logger'],
+    "secure" => false,
+    "secret" => $container['secretkey'],
+    "rules" => [
+		new \Tuupola\Middleware\JwtAuthentication\RequestPathRule([
+			// Degenerate access to "/webresources"
+			"path" => "/gamevasb/api/v1",
+			// It allows access to "login" without a token
+			"ignore" => [
+				"/gamevasb/api/v1/healthcheck",
+				"/gamevasb/api/v1/oauth"
+			]
+		])
+    ],
+    //"path" => "/gamevasb/api/v1",
+    //"passthrough" => "/gamevasb/api/v1/healthcheck",
+    "error" => function ($response, $arguments) {
+        $data["status"] = "error";
+        $data["message"] = $arguments["message"];
+        return $response
+            ->withHeader("Content-Type", "application/json")
+            ->write(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+    }
+]));
 
 $app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
     $name = $args['name'];
@@ -112,20 +144,13 @@ $app->post('/ocorrencia', function(Request $request, Response $response, array $
     return $response;
 });
 
-require './voluntario.php';
 ///gamevasb/api/v1/
 $app->group('/gamevasb', function() use ($app) {
     $app->group('/api', function() use ($app){
         $app->group('/v1', function() use ($app) {
-            // $app->post('/voluntario', function(Request $request, Response $response, array $args) {                
-            //     voluntarioNovo($request, $response, $args, $this->db, $this);
-            // });
+            $app->get('/oauth', 'oauthGeraToken');
             $app->post('/voluntario', 'voluntarioNovo');
-            $app->get('/healthcheck', function(Request $request, Response $response, array $args) {
-                $response = $response->withStatus(200);
-                $response->getBody()->write("{\"status\":\"available\"}");
-                return $response;
-            });
+            $app->get('/healthcheck', 'healthcheck');
         });
     });
 });
