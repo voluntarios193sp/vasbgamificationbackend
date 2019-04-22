@@ -121,6 +121,11 @@ $app->group('/gamevasb', function() use ($app) {
             //     voluntarioNovo($request, $response, $args, $this->db, $this);
             // });
             $app->post('/voluntario', 'voluntarioNovo');
+            $app->get('/healthcheck', function(Request $request, Response $response, array $args) {
+                $response = $response->withStatus(200);
+                $response->getBody()->write("{\"status\":\"available\"}");
+                return $response;
+            });
         });
     });
 });
