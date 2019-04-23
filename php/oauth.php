@@ -13,6 +13,7 @@ function oauthGeraToken(Request $request, Response $response, array $args) {
     $future = new DateTime("now +2 hours");
     $server = $request->getServerParams();
     $jti = (new Base62)->encode(random_bytes(16));
+    $scopes = "all";
     $payload = [
         "iat" => $now->getTimeStamp(),
         "exp" => $future->getTimeStamp(),
