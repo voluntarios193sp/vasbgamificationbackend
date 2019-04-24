@@ -30,17 +30,19 @@ function voluntarioNovo(Request $request, Response $response, array $args) {
     }
 
     $avatarURL = filter_var($data['avatar_url'], FILTER_SANITIZE_STRING);
+    $uuid = bin2hex(random_bytes(8));
 
     $novoID = 0;
 
     try {
-        $sql = "INSERT INTO voluntariojogo (cpf, nickname, avatar_url) ";
-        $sql .= "VALUES (?,?,?)";
+        $sql = "INSERT INTO voluntariojogo (cpf, nickname, avatar_url, uuid) ";
+        $sql .= "VALUES (?,?,?,?)";
         $stmt= $db->prepare($sql);
 
         $dado = array($cpf);
         array_push($dado, $nick);
         array_push($dado, $avatarURL);   
+        array_push($dado, $uuid);
 
         $logger->info('SQL ' . $sql);
         $logger->info('dados ', ['dado' => $dado]);
@@ -55,7 +57,7 @@ function voluntarioNovo(Request $request, Response $response, array $args) {
         return $response;
     }
         
-    $arrResp = array('id' => $novoID, 'cpf' => $cpf, 'avatar_url'=> $avatarURL, 'nickname' => $nick);
+    $arrResp = array('id' => $uuid, 'cpf' => $cpf, 'avatar_url'=> $avatarURL, 'nickname' => $nick);
 
     $response = $response->withHeader('Content-Type','application/json')->withStatus(201);
     //$response->setStatus(201);
