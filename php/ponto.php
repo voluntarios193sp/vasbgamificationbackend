@@ -17,7 +17,7 @@ function pontoNovo(Request $request, Response $response, array $args) {
     $jwt = str_replace('Bearer ', '', $jwt['HTTP_AUTHORIZATION'][0]);
     $jwtDecoded = JWT::decode($jwt, getOAuthSecret(), ['HS256']);
     //print_r($jwtDecoded);    exit;
-
+    
     try {
         $sql = "SELECT vasb_id FROM voluntariojogo where uuid = ?";
         $stmt= $db->prepare($sql);
@@ -30,6 +30,7 @@ function pontoNovo(Request $request, Response $response, array $args) {
         }
         // var_dump($arr);
         $vasbID = $arr[0]["vasb_id"];
+        
         $sql = "SELECT pontuacao FROM pontocorrencia where pct_id = ?";
         $stmt= $db->prepare($sql);
         $stmt->execute([$pctID]);
@@ -56,7 +57,7 @@ function pontoNovo(Request $request, Response $response, array $args) {
         array_push($dado, $pontuacao);
         // var_dump($dado);
         $stmt->execute($dado);
-        
+
     } catch (PDOException $e) {
         $logger->addError('PDO Error', ['error' => $e, 'sql' => $sql, 'dado' => print_r($dado, true)]);
         $arrResp = array('status' => 'Error dealing with database records. See logs for futher details');
