@@ -43,13 +43,26 @@ function voluntarioNovo(Request $request, Response $response, array $args) {
         array_push($dado, $nick);
         array_push($dado, $avatarURL);   
         array_push($dado, $uuid);
-
-        $logger->info('SQL ' . $sql);
-        $logger->info('dados ', ['dado' => $dado]);
-
         $stmt->execute($dado);
         $novoID = $db->lastInsertId();
         $logger->info("Novo voluntario " . $novoID);
+
+        $sql = "INSERT INTO voluntariosaldo (vasb_id, eqt_id, valor, entrada_saida) VALUES (?,?,?,0)";
+        $stmt= $db->prepare($sql);
+        $dado = array($novoID);
+        array_push($dado, 0);   
+        array_push($dado, 0);
+        array_push($dado, 0);
+        $stmt->execute($dado);
+
+        $sql = "INSERT INTO voluntariosaldo (vasb_id, pct_id, valor, entrada_saida) VALUES (?,?,?,0)";
+        $stmt= $db->prepare($sql);
+        $dado = array($novoID);
+        array_push($dado, 0);   
+        array_push($dado, 0);
+        array_push($dado, 1);
+        $stmt->execute($dado);
+
     } catch (PDOException $e) {
         $logger->addError('PDO Error', ['error' => $e]);
         $response = $response->withStatus(500);
