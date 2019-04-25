@@ -9,3 +9,9 @@ Na raiz do projeto há o modelo de banco de dados.
 ## Descrição da API (  Colabore na especificação  )
 
 https://docs.google.com/document/d/1lJ-7TuU9obNebUhFT03YS2eUFPr-Ty8BEG8nuxgc2AM/edit?usp=sharing
+
+## Testes
+
+Testes estão sendo construídos no Postman
+
+https://www.getpostman.com/collections/bc6435bf7d89595e7578
