@@ -157,6 +157,7 @@ $app->post('/ocorrencia', function(Request $request, Response $response, array $
 require './healthcheck.php';
 require './voluntario.php';
 require './ponto.php';
+require './equipamento.php';
 require './oauth.php';
 
 ///gamevasb/api/v1/
@@ -166,6 +167,7 @@ $app->group('/gamevasb', function() use ($app) {
             $app->get('/oauth', 'oauthGeraToken');
             $app->post('/voluntario', 'voluntarioNovo');
             $app->post('/voluntario/{id}/pontuacao', 'pontoNovo');
+            $app->post('/voluntario/{id}/equipamento', 'equipamentoNovo');
             $app->get('/healthcheck','healthCheckFn');
         });
     });
