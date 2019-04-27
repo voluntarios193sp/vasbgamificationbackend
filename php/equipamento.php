@@ -5,6 +5,8 @@ use \Psr\Http\Message\ResponseInterface as Response;
 use Firebase\JWT\JWT;
 
 
+
+
 function equipamentoNovo(Request $request, Response $response, array $args) {
     $db = getDB();
     $logger = getLogger();
@@ -13,10 +15,6 @@ function equipamentoNovo(Request $request, Response $response, array $args) {
 
     $eqtID = filter_var($data['equipamento_id'], FILTER_SANITIZE_STRING);
     $playerID = filter_var($args['id'], FILTER_SANITIZE_STRING);
-    $jwt = $request->getHeaders();
-    $jwt = str_replace('Bearer ', '', $jwt['HTTP_AUTHORIZATION'][0]);
-    $jwtDecoded = JWT::decode($jwt, getOAuthSecret(), ['HS256']);
-    //print_r($jwtDecoded);    exit;
     
     try {
         $sql = "SELECT vasb_id FROM voluntariojogo where uuid = ?";
