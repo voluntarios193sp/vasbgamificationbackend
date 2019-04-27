@@ -43,6 +43,47 @@ function voluntarioListarPorIDOuCpf(Request $request, Response $response, array 
     return $response;
 }
 
+function voluntarioExtrato(Request $request, Response $response, array $args) {
+    $db = getDB();
+    $logger = getLogger();
+    $voluntario = fnGetVoluntario($db, $logger, $args['id']);    
+    if (is_null($voluntario)) {
+        $data = array('error' => 'voluntario nao encontrado');
+        $response = $response->withJson($data, 404);
+        return $response;
+    } else {
+        try {
+            $sql = 'SELECT id, valor, entrada_saida, item FROM 
+                    (SELECT a.vasb_id, a.vsd_id as id, a.valor, a.entrada_saida, e.nome as item
+                    FROM voluntariosaldo a , equipamento e
+                    WHERE a.eqt_id = e.eqt_id
+                    UNION
+                    SELECT a.vasb_id, a.vsd_id as id, a.valor, a.entrada_saida, p.sigla as item
+                    FROM voluntariosaldo a, pontocorrencia p
+                    WHERE a.pct_id = p.pct_id) TABA
+                    WHERE vasb_id = ?
+                    order by id';
+            $dado = array($voluntario["vasb_id"]);
+            $stmt = $db->prepare($sql);   
+            $stmt->execute($dado);    
+            $arrExtrato = $stmt->fetchAll(PDO::FETCH_ASSOC);   
+            if (count($arrExtrato)<1) {
+                $logger->addError('[voluntarioExtrato] Itens nao encontrado', ['query'=> $sql, 'params'=>print_r($voluntario, true)]);
+                $data = array('error' => 'itens do extrato do voluntario informado nao encontrado');
+                $response = $response->withJson($data, 404);
+                return $response;
+            }
+        } catch (PDOException $e) {
+            $logger->addError('PDO Error', ['error' => $e, 'query'=> $sql, 'params'=>print_r($dado, true)]);
+            $data = array('error' => 'erro envolvendo banco de dados. favor verificar logs.');
+            $response = $response->withJson($data, 500);
+            return $response;
+        }    
+        $response = $response->withHeader('Content-Type','application/json')->withJson($arrExtrato, 200);            
+    }
+    return $response;
+}
+
 function voluntarioSaldo(Request $request, Response $response, array $args) {
     $db = getDB();
     $logger = getLogger();
