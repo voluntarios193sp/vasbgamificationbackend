@@ -4,6 +4,32 @@ use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 
 
+function equipamentoBuscaPorId(Request $request, Response $response, array $args) {
+    $db = getDB();
+    $logger = getLogger();
+    $eqtID = filter_var($args['id'], FILTER_SANITIZE_STRING);
+    try {
+        $sql = "SELECT b.eqt_id as equipamento_id, b.nome, b.descricao, b.imagem_url, b.preco FROM equipamento b WHERE b.eqt_id = ? ORDER BY b.nome";
+        $dado = array($eqtID);
+        $stmt = $db->prepare($sql);
+        $stmt->execute($dado);
+        $arrEquip = $stmt->fetchAll();
+        if (count($arrEquip)<1) {
+            $arrResp = array('status' => 'Equipamentos não cadastrados');
+            $response = $response->withJson($arrResp, 404);
+            return $response;
+        }
+        $equip = $arrEquip[0];
+    } catch (PDOException $e) {
+        $logger->addError('PDO Error', ['error' => $e, 'sql' => $sql]);
+        $arrResp = array('status' => 'Error dealing with database records. See logs for futher details');
+        $response = $response->withJson($arrResp, 500);
+        return $response;
+    }
+    return $response->withJSON($equip, 200);
+}
+
+
 function equipamentoListaTodos(Request $request, Response $response, array $args) {
     $db = getDB();
     $logger = getLogger();
@@ -12,13 +38,12 @@ function equipamentoListaTodos(Request $request, Response $response, array $args
         $result = $db->query($sql)->fetchAll();
         if (count($result)<1) {
             $arrResp = array('status' => 'Equipamentos não cadastrados');
-            $response = $response->withJson($arrResp, 404);
+            return $response->withJson($arrResp, 404);
         }
     } catch (PDOException $e) {
         $logger->addError('PDO Error', ['error' => $e, 'sql' => $sql]);
         $arrResp = array('status' => 'Error dealing with database records. See logs for futher details');
-        $response = $response->withJson($arrResp, 500);
-        return $response;
+        return $response->withJson($arrResp, 500);
     }
     return $response->withJSON($result, 200);
 }

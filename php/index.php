@@ -176,6 +176,7 @@ $app->group('/gamevasb', function() use ($app) {
             $app->post('/voluntario/{id}/equipamento', 'equipamentoNovo');
 
             $app->get('/equipamento', 'equipamentoListaTodos');
+            $app->get('/equipamento/{id}', 'equipamentoBuscaPorId');
 
             $app->get('/healthcheck','healthCheckFn');
         });
