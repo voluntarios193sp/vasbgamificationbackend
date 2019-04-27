@@ -7,6 +7,29 @@ function teste(Request $request, Response $response, array $args) {
     print_r(getDB());
 }
 
+function voluntarioListarTodos(Request $request, Response $response, array $args) {
+    $db = getDB();
+    $logger = getLogger();
+    try {
+        $sql = "SELECT uuid, nickname, avatar_url FROM voluntariojogo ORDER BY vasb_id";
+        $results = $db->query($sql);       
+        $arrVoluntarios = $results->fetchAll(PDO::FETCH_ASSOC);
+        if (count($arrVoluntarios)>0) {
+            $response = $response->withHeader('Content-Type','application/json')->withJson($arrVoluntarios, 200);    
+        } else {
+            $response = $response->withStatus(404);
+        }
+        return $response;
+
+    } catch (PDOException $e) {
+        $logger->addError('PDO Error', ['error' => $e]);
+        $response = $response->withStatus(500);
+        $response->getBody()->write("Internal Error 1");
+        return $response;
+    }        
+    
+}
+
 function voluntarioNovo(Request $request, Response $response, array $args) {
     $db = getDB();
     $logger = getLogger();
