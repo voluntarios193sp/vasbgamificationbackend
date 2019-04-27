@@ -2,10 +2,26 @@
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
-use Firebase\JWT\JWT;
 
 
-
+function equipamentoListaTodos(Request $request, Response $response, array $args) {
+    $db = getDB();
+    $logger = getLogger();
+    try {
+        $sql = "SELECT b.eqt_id as equipamento_id, b.nome, b.descricao, b.imagem_url, b.preco FROM equipamento b ORDER BY b.nome";
+        $result = $db->query($sql)->fetchAll();
+        if (count($result)<1) {
+            $arrResp = array('status' => 'Equipamentos não cadastrados');
+            $response = $response->withJson($arrResp, 404);
+        }
+    } catch (PDOException $e) {
+        $logger->addError('PDO Error', ['error' => $e, 'sql' => $sql]);
+        $arrResp = array('status' => 'Error dealing with database records. See logs for futher details');
+        $response = $response->withJson($arrResp, 500);
+        return $response;
+    }
+    return $response->withJSON($result, 200);
+}
 
 function equipamentoNovo(Request $request, Response $response, array $args) {
     $db = getDB();
