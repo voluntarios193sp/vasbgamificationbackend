@@ -170,6 +170,7 @@ $app->group('/gamevasb', function() use ($app) {
             $app->get('/voluntario/{id}', 'voluntarioListarPorIDOuCpf');
             $app->get('/voluntario/{id}/saldo', 'voluntarioSaldo');
             $app->get('/voluntario/{id}/extrato', 'voluntarioExtrato');
+            $app->get('/voluntario/{id}/equipamento', 'voluntarioEquipamentos');
             $app->post('/voluntario/{id}/pontuacao', 'pontoNovo');
             $app->post('/voluntario/{id}/equipamento', 'equipamentoNovo');
             $app->get('/healthcheck','healthCheckFn');

@@ -68,7 +68,7 @@ function voluntarioExtrato(Request $request, Response $response, array $args) {
             $stmt->execute($dado);    
             $arrExtrato = $stmt->fetchAll(PDO::FETCH_ASSOC);   
             if (count($arrExtrato)<1) {
-                $logger->addError('[voluntarioExtrato] Itens nao encontrado', ['query'=> $sql, 'params'=>print_r($voluntario, true)]);
+                $logger->addError('[voluntarioExtrato] Itens nao encontrados', ['query'=> $sql, 'params'=>print_r($voluntario, true)]);
                 $data = array('error' => 'itens do extrato do voluntario informado nao encontrado');
                 $response = $response->withJson($data, 404);
                 return $response;
@@ -83,6 +83,49 @@ function voluntarioExtrato(Request $request, Response $response, array $args) {
     }
     return $response;
 }
+
+
+function voluntarioEquipamentos(Request $request, Response $response, array $args) {
+    $db = getDB();
+    $logger = getLogger();
+    $voluntario = fnGetVoluntario($db, $logger, $args['id']);    
+    if (is_null($voluntario)) {
+        $data = array('error' => 'voluntario nao encontrado');
+        $response = $response->withJson($data, 404);
+        return $response;
+    } else {
+        try {
+            $sql = 'SELECT 
+                    a.veq_id as id,
+                    a.eqt_id as equipamento_id,
+                    a.comprado_quando,
+                    b.nome,
+                    b.descricao,
+                    b.imagem_url
+                    FROM voluntatarioequipamento a, equipamento b
+                    WHERE a.eqt_id = b.eqt_id
+                    AND a.vasb_id = ?';
+            $dado = array($voluntario["vasb_id"]);
+            $stmt = $db->prepare($sql);   
+            $stmt->execute($dado);    
+            $arrExtrato = $stmt->fetchAll(PDO::FETCH_ASSOC);   
+            if (count($arrExtrato)<1) {
+                $logger->addError('[voluntarioEquipamentos] Itens nao encontrados', ['query'=> $sql, 'params'=>print_r($voluntario, true)]);
+                $data = array('error' => 'equipamentos do voluntario informado nao encontrados');
+                $response = $response->withJson($data, 404);
+                return $response;
+            }
+        } catch (PDOException $e) {
+            $logger->addError('PDO Error', ['error' => $e, 'query'=> $sql, 'params'=>print_r($dado, true)]);
+            $data = array('error' => 'erro envolvendo banco de dados. favor verificar logs.');
+            $response = $response->withJson($data, 500);
+            return $response;
+        }    
+        $response = $response->withHeader('Content-Type','application/json')->withJson($arrExtrato, 200);            
+    }
+    return $response;
+}
+
 
 function voluntarioSaldo(Request $request, Response $response, array $args) {
     $db = getDB();
