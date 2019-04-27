@@ -3,7 +3,7 @@ function fnGetVoluntario($db, $logger, $param) {
     $param = filter_var($param, FILTER_SANITIZE_STRING);
     $voluntario = null;
     try {
-        $sql = "SELECT uuid, nickname, avatar_url FROM voluntariojogo WHERE ";
+        $sql = "SELECT vasb_id, uuid, nickname, avatar_url FROM voluntariojogo WHERE ";
         if (is_numeric($param)) {
             $sql .= "cpf";
         } else {

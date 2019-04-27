@@ -37,7 +37,42 @@ function voluntarioListarPorIDOuCpf(Request $request, Response $response, array 
     if (is_null($voluntario)) {
         $response = $response->withStatus(404);
     } else {
+        unset($voluntario["vasb_id"]);
         $response = $response->withHeader('Content-Type','application/json')->withJson($voluntario, 200);            
+    }
+    return $response;
+}
+
+function voluntarioSaldo(Request $request, Response $response, array $args) {
+    $db = getDB();
+    $logger = getLogger();
+    $voluntario = fnGetVoluntario($db, $logger, $args['id']);    
+    if (is_null($voluntario)) {
+        $data = array('error' => 'voluntario nao encontrado');
+        $response = $response->withJson($data, 404);
+        return $response;
+    } else {
+        try {
+            $sql = "SELECT saldo FROM vw_saldovoluntario WHERE vasb_id = ?";
+            $dado = array($voluntario["vasb_id"]);
+            $stmt = $db->prepare($sql);   
+            $stmt->execute($dado);    
+            $arrSaldo = $stmt->fetchAll(PDO::FETCH_ASSOC);   
+            if (count($arrSaldo)>0) {
+                $saldo = $arrSaldo[0]; 
+            } else {
+                $logger->addError('[voluntarioSaldo] Saldo nao encontrado', ['query'=> $sql, 'params'=>print_r($voluntario, true)]);
+                $data = array('error' => 'saldo do voluntario informado nao encontrado');
+                $response = $response->withJson($data, 404);
+                return $response;
+            }
+        } catch (PDOException $e) {
+            $logger->addError('PDO Error', ['error' => $e, 'query'=> $sql, 'params'=>print_r($dado, true)]);
+            $data = array('error' => 'erro envolvendo banco de dados. favor verificar logs.');
+            $response = $response->withJson($data, 500);
+            return $response;
+        }    
+        $response = $response->withHeader('Content-Type','application/json')->withJson($saldo, 200);            
     }
     return $response;
 }
