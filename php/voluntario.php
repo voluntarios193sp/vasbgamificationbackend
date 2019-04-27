@@ -1,4 +1,5 @@
 <?php
+include_once "./lib/voluntario.php";
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
@@ -32,32 +33,13 @@ function voluntarioListarTodos(Request $request, Response $response, array $args
 function voluntarioListarPorIDOuCpf(Request $request, Response $response, array $args) {
     $db = getDB();
     $logger = getLogger();
-    $param = filter_var($args['id'], FILTER_SANITIZE_STRING);
-    try {
-        $sql = "SELECT uuid, nickname, avatar_url FROM voluntariojogo WHERE ";
-        if (is_numeric($param)) {
-            $sql .= "cpf";
-        } else {
-            $sql .= "uuid";
-        }
-        $sql .= " = ?";
-        $dado = array($param);
-        $stmt = $db->prepare($sql);   
-        $stmt->execute($dado);    
-        $arrVoluntarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        if (count($arrVoluntarios)>0) {
-            $response = $response->withHeader('Content-Type','application/json')->withJson($arrVoluntarios[0], 200);    
-        } else {
-            $response = $response->withStatus(404);
-        }
-        return $response;
-
-    } catch (PDOException $e) {
-        $logger->addError('PDO Error', ['error' => $e, 'query'=> $sql, 'params'=>print_r($dado, true)]);
-        $response = $response->withStatus(500);
-        $response->getBody()->write("Internal Error 1");
-        return $response;
-    }            
+    $voluntario = fnGetVoluntario($db, $logger, $args['id']);    
+    if (is_null($voluntario)) {
+        $response = $response->withStatus(404);
+    } else {
+        $response = $response->withHeader('Content-Type','application/json')->withJson($voluntario, 200);            
+    }
+    return $response;
 }
 
 function voluntarioNovo(Request $request, Response $response, array $args) {
