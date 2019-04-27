@@ -167,6 +167,7 @@ $app->group('/gamevasb', function() use ($app) {
             $app->get('/oauth', 'oauthGeraToken');
             $app->post('/voluntario', 'voluntarioNovo');
             $app->get('/voluntario', 'voluntarioListarTodos');
+            $app->get('/voluntario/{id}', 'voluntarioListarPorIDOuCpf');
             $app->post('/voluntario/{id}/pontuacao', 'pontoNovo');
             $app->post('/voluntario/{id}/equipamento', 'equipamentoNovo');
             $app->get('/healthcheck','healthCheckFn');
