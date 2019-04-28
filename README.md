@@ -15,3 +15,5 @@ https://docs.google.com/document/d/1lJ-7TuU9obNebUhFT03YS2eUFPr-Ty8BEG8nuxgc2AM/
 Testes estão sendo construídos no Postman
 
 https://www.getpostman.com/collections/bc6435bf7d89595e7578
+
+Suba na sua maquina um servidor e reutilize o Postman para facilitar seus testes
