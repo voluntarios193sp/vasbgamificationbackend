@@ -136,4 +136,30 @@ function equipamentoNovo(Request $request, Response $response, array $args) {
     $response = $response->withJson($arrResp, 201);
     return $response;
 };
+
+
+function patenteEquipamentosBuscaPorId(Request $request, Response $response, array $args) {
+    $db = getDB();
+    $logger = getLogger();
+    $pttID = filter_var($args['id'], FILTER_SANITIZE_STRING);
+    try {
+        //$sql = "SELECT a.ptt_id as classe_id, a.classe, a.pontuacao_minima, b.nome, b.eqt_id as equipamento_id, b.descricao, b.imagem_url, b.preco FROM patente a, equipamento b WHERE a.ptt_id=b.ptt_id AND a.ptt_id = ? ORDER BY b.preco";
+        $sql = "SELECT b.nome, b.eqt_id as equipamento_id, b.descricao, b.imagem_url, b.preco FROM patente a, equipamento b WHERE a.ptt_id=b.ptt_id AND a.ptt_id = ? ORDER BY b.preco";
+        $dado = array($pttID);
+        $stmt = $db->prepare($sql);
+        $stmt->execute($dado);
+        $arrReg = $stmt->fetchAll();
+        if (count($arrReg)<1) {
+            $arrResp = array('status' => 'Classe/Patente/Nivel não cadastrado/encontrado');
+            $response = $response->withJson($arrResp, 404);
+            return $response;
+        }
+    } catch (PDOException $e) {
+        $logger->addError('PDO Error', ['error' => $e, 'sql' => $sql]);
+        $arrResp = array('status' => 'Error dealing with database records. See logs for futher details');
+        $response = $response->withJson($arrResp, 500);
+        return $response;
+    }
+    return $response->withJSON($arrReg, 200);
+}
 ?>

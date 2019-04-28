@@ -182,7 +182,8 @@ $app->group('/gamevasb', function() use ($app) {
             $app->post('/classe', 'patenteNovo');
             $app->get('/classe', 'patenteListaTodos');
             $app->get('/classe/{id}', 'patenteBuscaPorId');
-
+            $app->get('/classe/{id}/equipamento', 'patenteEquipamentosBuscaPorId');
+            
             $app->get('/healthcheck','healthCheckFn');
         });
     });
