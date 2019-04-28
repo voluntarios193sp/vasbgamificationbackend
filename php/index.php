@@ -32,7 +32,7 @@ $app->add(function ($req, $res, $next) {
             ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
 });
 
-$app->add(new Tuupola\Middleware\HttpBasicAuthentication([
+$app->add(new \Tuupola\Middleware\HttpBasicAuthentication([
     "path" => ["/gamevasb/api/v1/oauth"],
     "realm" => "Protected",
     "secure" => true,
