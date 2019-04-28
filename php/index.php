@@ -158,6 +158,7 @@ require './healthcheck.php';
 require './voluntario.php';
 require './ponto.php';
 require './equipamento.php';
+require './patente_classe.php';
 require './oauth.php';
 
 ///gamevasb/api/v1/
@@ -177,6 +178,10 @@ $app->group('/gamevasb', function() use ($app) {
 
             $app->get('/equipamento', 'equipamentoListaTodos');
             $app->get('/equipamento/{id}', 'equipamentoBuscaPorId');
+
+            $app->post('/classe', 'patenteNovo');
+            $app->get('/classe', 'patenteListaTodos');
+            $app->get('/classe/{id}', 'patenteBuscaPorId');
 
             $app->get('/healthcheck','healthCheckFn');
         });
